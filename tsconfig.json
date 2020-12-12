@@ -1,0 +1,43 @@
+{
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ],
+  "compileOnSave": true,
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "rootDir": "src",
+    "jsx": "react",
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "declaration": false,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "react": ["node_modules/@types/react"],
+      "react-dom": ["node_modules/@types/react-dom"],
+      "*": ["src/*"]
+    },
+    "lib": [
+      "DOM",
+      "ES6",
+      "ES2015.Collection",
+      "ES2015.Iterable",
+      "ES2015.Promise",
+      "esnext.intl",
+      "es2017.intl",
+      "es2018.intl",
+      "dom.iterable"
+    ],
+    "types": ["node"]
+  }
+}
