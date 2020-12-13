@@ -12,12 +12,14 @@ export default function Tree(): JSX.Element {
     const changeTree = (action: IAction<INodePayload>) => {
         const { type, payload } = action;
         let value = { ...tree };
+
         if (type === ActionType.create) {
             value = payload?.value;
         }
         if (type === ActionType.delete) {
             value = null;
         }
+
         setTree(value);
     };
 
