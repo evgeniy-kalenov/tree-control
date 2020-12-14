@@ -1,10 +1,4 @@
-export enum ActionType {
-    create,
-    delete,
-    update
-}
-
-export interface IAction<P = any> {
-    type: ActionType;
+export interface IAction<T = any, P = any> {
+    type: T;
     payload?: P;
 }

@@ -1,32 +1,66 @@
 import * as React from "react";
 import styled from "styled-components";
-import { INodeAttribute } from "./types";
+import { INodeAttribute, TreeActions } from "./types";
 import { Link } from "./TreeNode";
-import { IAction, ActionType } from "../../types";
+import { IAction } from "../../types";
+import EditableText from "../EditableText/EditableText";
 
 export interface NodeAttributeProps {
     value: INodeAttribute;
-    onChange: (action: IAction<INodeAttribute>) => void;
+    onChange?: (action: IAction<TreeActions, INodeAttribute>) => void;
 }
 
 export default function TreeNodeAttribute(props: NodeAttributeProps): JSX.Element {
 
-    const { name, value } = props.value;
+    const attribute = props.value;
+
+    if (!attribute) {
+        throw new Error("Attribute not found");
+    }
+
+    const { name, value } = attribute;
 
     const deleteAttribute = (ev) => {
         ev.preventDefault();
         props.onChange({
-            type: ActionType.delete,
-            payload: props.value
+            type: TreeActions.delete,
+            payload: attribute
         });
+    };
+
+    const changeAttribute = (changes: Partial<INodeAttribute>) => {
+        props.onChange({
+            type: TreeActions.change,
+            payload: { ...attribute, ...changes }
+        });
+    };
+
+    const changeAttributeName = (value: string) => {
+        if (value && attribute.name !== value) {
+            changeAttribute({ name: value });
+        }
+    };
+
+    const changeAttributeValue = (value: string) => {
+        if (value && attribute.value !== value) {
+            changeAttribute({ value });
+        }
     };
 
     return (
         <Container>
             <Content>
-                <span>{ name }</span>
-                <span>:</span>
-                <span>{ value }</span>
+                <EditableText editMode={ !name } onChange={ changeAttributeName }>
+                    <span>{ name }</span>
+                </EditableText>
+                { Boolean(name) && (
+                    <>
+                        <span>:</span>
+                        <EditableText editMode={ !value } onChange={ changeAttributeValue }>
+                            <span>{ value }</span>
+                        </EditableText>
+                    </>
+                )}
             </Content>
             <Link href={"#"} onClick={ deleteAttribute }>Delete</Link>
         </Container>

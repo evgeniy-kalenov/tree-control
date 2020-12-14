@@ -1,26 +1,30 @@
 import * as React from "react";
 import { useState } from "react";
-import { ITreeNode, INodePayload } from "./types";
+import { ITreeNode, TreeActions } from "./types";
 import { defaultTree } from "../../data";
 import TreeNode from "./TreeNode";
-import { IAction, ActionType } from "../../types";
+import genKey from "../../utils/genKey";
+import { IAction } from "../../types";
 
 export default function Tree(): JSX.Element {
 
     const [ tree, setTree ] = useState<ITreeNode>(defaultTree);
 
-    const changeTree = (action: IAction<INodePayload>) => {
-        const { type, payload } = action;
-        let value = { ...tree };
-
-        if (type === ActionType.create) {
-            value = payload?.value;
+    const changeTree = ({ type, payload }: IAction<TreeActions>) => {
+        switch (type) {
+            case TreeActions.create: {
+                setTree({ id: genKey(), name: null });
+                break;
+            }
+            case TreeActions.delete: {
+                setTree(null);
+                break;
+            }
+            case TreeActions.change: {
+                setTree({ ...tree });
+                break;
+            }
         }
-        if (type === ActionType.delete) {
-            value = null;
-        }
-
-        setTree(value);
     };
 
     return (

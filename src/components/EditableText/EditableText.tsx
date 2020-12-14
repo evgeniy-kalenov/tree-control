@@ -6,7 +6,7 @@ import styled from "styled-components";
 export interface EditableTextProps {
     children: JSX.Element;
     editMode?: boolean;
-    onChange?: (value: string) => void;
+    onChange: (value: string) => void;
 }
 
 export default function EditableText(props: EditableTextProps): JSX.Element {
@@ -23,29 +23,26 @@ export default function EditableText(props: EditableTextProps): JSX.Element {
 
     useEffect(() => {
         if (editMode) {
-            inputRef.current?.focus();
-        } else {
-            props?.onChange(value);
+            inputRef.current?.select();
         }
     }, [editMode]);
+
+    useEffect(() => {
+        if (props.editMode !== editMode) {
+            setEditMode(props.editMode);
+        }
+    }, [props]);
 
     const inputHandler = (ev) => {
         setValue(ev.target.value.trim());
     };
 
     const keyUpHandler = (ev) => {
-        if (ev.target === inputRef.current && ev.code === "Enter") {
-            setEditMode(false);
+        if (ev.target === inputRef.current && (ev.code === "Enter" || ev.code === "NumpadEnter")) {
+            props.onChange(value);
         }
     };
     useEventListener("keyup", keyUpHandler);
-
-    const clickHandler = (ev) => {
-        if (ev.target !== inputRef.current && editMode) {
-            setEditMode(false);
-        }
-    };
-    useEventListener("click", clickHandler);
 
     /*
     * Renders

@@ -1,42 +1,41 @@
 import * as React from "react";
 import styled from "styled-components";
 import TreeNodeAttribute from "./TreeNodeAttribute";
-import { ITreeNode, INodeAttribute, INodePayload } from "./types";
+import { ITreeNode, INodeAttribute, TreeActions } from "./types";
 import genKey from "../../utils/genKey";
-import { IAction, ActionType } from "../../types";
+import { IAction } from "../../types";
 import EditableText from "../EditableText/EditableText";
 
 export interface TreeNodeProps {
     value: ITreeNode;
     parent?: ITreeNode;
-    onChange: (action: IAction<INodePayload>) => void;
+    onChange: (action: IAction<TreeActions>) => void;
 }
 
 export default function TreeNode(props: TreeNodeProps): JSX.Element {
 
     const current = props.value;
+    const parent = props.parent;
 
-    const onChange = () => {
-        props.onChange({ type: ActionType.update });
+    const changeNode = () => {
+        props.onChange({ type: TreeActions.change });
     };
 
     const createNode = (ev) => {
+        const node: ITreeNode = { id: genKey(), name: null };
+
         if (!current) {
             /* создается корневая нода */
             props.onChange({
-                type: ActionType.create,
-                payload: {
-                    root: null,
-                    value: { name: null }
-                }
+                type: TreeActions.create,
+                payload: { value: node }
             });
             return;
         }
 
         if (!current?.nodes) current.nodes = [];
-        current.nodes.unshift({ name: null });
-
-        onChange();
+        current.nodes.unshift(node);
+        changeNode();
     };
 
     const deleteNode = (ev?) => {
@@ -44,7 +43,7 @@ export default function TreeNode(props: TreeNodeProps): JSX.Element {
 
         if (!props.parent) {
             /* удаляется корневая нода */
-            props.onChange({ type: ActionType.delete });
+            props.onChange({ type: TreeActions.delete });
             return;
         }
 
@@ -52,7 +51,7 @@ export default function TreeNode(props: TreeNodeProps): JSX.Element {
         const index = nodes.findIndex(({ name }) => name === current.name);
         if (index > -1) {
             nodes.splice(index, 1);
-            onChange();
+            changeNode();
         }
     };
 
@@ -63,27 +62,42 @@ export default function TreeNode(props: TreeNodeProps): JSX.Element {
         }
         if (value && current.name !== value) {
             current.name = value;
-            onChange();
+            changeNode();
+        }
+    };
+
+    const changeAttribute = ({ type, payload }: IAction<TreeActions>) => {
+        switch (type) {
+            case TreeActions.create: {
+                if (!current?.attrs) current.attrs = [];
+                current.attrs.push(payload);
+                changeNode();
+                break;
+            }
+            case TreeActions.delete: {
+                const index = current.attrs.findIndex(({ name }) => name === payload.name);
+                if (index > -1) {
+                    current.attrs.splice(index, 1);
+                    changeNode();
+                }
+                break;
+            }
+            case TreeActions.change: {
+                current.attrs = current.attrs.map(attr => {
+                    return attr.id === payload.id ? payload : attr;
+                });
+                changeNode();
+                break;
+            }
         }
     };
 
     const createAttribute = (ev) => {
         ev.preventDefault();
-
-        if (!current?.attrs) current.attrs = [];
-        current.attrs.push({ name: "New attr", value: "attr value" });
-
-        onChange();
-    };
-
-    const changeAttribute = ({ type, payload }: IAction<INodeAttribute>) => {
-        if (type === ActionType.delete) {
-            const index = current.attrs.findIndex(({ name }) => name === payload.name);
-            if (index > -1) {
-                current.attrs.splice(index, 1);
-                onChange();
-            }
-        }
+        changeAttribute({
+            type: TreeActions.create,
+            payload: { id: genKey(), name: null, value: null }
+        });
     };
 
     /*
@@ -106,7 +120,10 @@ export default function TreeNode(props: TreeNodeProps): JSX.Element {
         return Boolean(nodes?.length) && (
             <Children>
                 { nodes.map(node => (
-                    <TreeNode key={ genKey() } value={ node } parent={ props.value } onChange={ props.onChange } />
+                    <TreeNode key={ genKey() }
+                              value={ node }
+                              parent={ props.value }
+                              onChange={ props.onChange } />
                 )) }
             </Children>
         );
@@ -125,7 +142,7 @@ export default function TreeNode(props: TreeNodeProps): JSX.Element {
                             <EditableText editMode={ !Boolean(node.name) } onChange={ changeNodeName }>
                                 <Name>{ node.name }</Name>
                             </EditableText>
-                            { showActions && <Link href={"#"} onClick={ deleteNode }>Delete</Link> }
+                            <Link href={"#"} onClick={ deleteNode }>Delete</Link>
                         </Content>
 
                         { attrsRender(node.attrs) }
