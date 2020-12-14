@@ -4,6 +4,7 @@ import { INodeAttribute, TreeActions } from "./types";
 import { Link } from "./TreeNode";
 import { IAction } from "../../types";
 import EditableText from "../EditableText/EditableText";
+import { useState } from "react";
 
 export interface NodeAttributeProps {
     value: INodeAttribute;
@@ -47,8 +48,16 @@ export default function TreeNodeAttribute(props: NodeAttributeProps): JSX.Elemen
         }
     };
 
+    const [ hover, setHover ] = useState<boolean>(false);
+    const mouseEnter = () => setHover(true);
+    const mouseLeave = () => setHover(false);
+
+    /*
+    * Renders
+    * */
+
     return (
-        <Container>
+        <Container onMouseEnter={ mouseEnter } onMouseLeave={ mouseLeave }>
             <Content>
                 <EditableText editMode={ !name } onChange={ changeAttributeName }>
                     <span>{ name }</span>
@@ -62,7 +71,7 @@ export default function TreeNodeAttribute(props: NodeAttributeProps): JSX.Elemen
                     </>
                 )}
             </Content>
-            <Link href={"#"} onClick={ deleteAttribute }>Delete</Link>
+            <Link href={"#"} onClick={ deleteAttribute } hidden={ !hover }>Delete</Link>
         </Container>
     );
 }

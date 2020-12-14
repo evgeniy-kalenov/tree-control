@@ -5,6 +5,7 @@ import { ITreeNode, INodeAttribute, TreeActions } from "./types";
 import genKey from "../../utils/genKey";
 import { IAction } from "../../types";
 import EditableText from "../EditableText/EditableText";
+import { useState } from "react";
 
 export interface TreeNodeProps {
     value: ITreeNode;
@@ -100,6 +101,10 @@ export default function TreeNode(props: TreeNodeProps): JSX.Element {
         });
     };
 
+    const [ hover, setHover ] = useState<boolean>(false);
+    const mouseEnter = () => setHover(true);
+    const mouseLeave = () => setHover(false);
+
     /*
     * Renders
     * */
@@ -138,11 +143,11 @@ export default function TreeNode(props: TreeNodeProps): JSX.Element {
                 </ContainerInner>
                 { Boolean(node) && (
                     <ContainerInner>
-                        <Content>
+                        <Content onMouseEnter={ mouseEnter } onMouseLeave={ mouseLeave }>
                             <EditableText editMode={ !Boolean(node.name) } onChange={ changeNodeName }>
                                 <Name>{ node.name }</Name>
                             </EditableText>
-                            <Link href={"#"} onClick={ deleteNode }>Delete</Link>
+                            <Link href={"#"} onClick={ deleteNode } hidden={ !hover }>Delete</Link>
                         </Content>
 
                         { attrsRender(node.attrs) }
@@ -159,11 +164,14 @@ export default function TreeNode(props: TreeNodeProps): JSX.Element {
     return nodeRender(current);
 }
 
-export const Link = styled.a`
+export const Link = styled.a<{ hidden?: boolean }>`
   display: flex;
   align-items: center;
   font-size: 12px;
   padding-left: 8px;
+  opacity: ${ ({ hidden }) => hidden ? 0 : 1};
+  visibility: ${ ({ hidden }) => hidden ? "hidden" : "visible" };
+  transition: visibility, opacity .15s;
 `;
 
 const Container = styled.div`
